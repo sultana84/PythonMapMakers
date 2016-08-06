@@ -4,12 +4,23 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import csv
 
-Base = declarative_base()
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:{}@localhost/restaurantmap'.format(os.environ.get('DB_PASSWORD'))
+db = SQLAlchemy(app)
+
+
+
+##Base = declarative_base()
 
 #Create a class for the restaurant data
-class Restaurant(Base):
-    __tablename__ = 'Restaurants'
-    __table_args__ = {'sqlite_autoincrement': True}
+class Restaurant(db.Model):
+##class Restaurant(Base):
+#    __tablename__ = 'Restaurants'
+#    __table_args__ = {'sqlite_autoincrement': True}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     obj_id = Column(String(20))
@@ -19,9 +30,20 @@ class Restaurant(Base):
     longitude = Column(String)
     latitude = Column(String)
 
+    def __init__(self,obj_id, name, building, zip_code, longitude, latitude):
+        self.obj_id = obj_id
+        self.name = name
+        self.building = building
+        self.zip_code = zip_code
+        self.longitude = longitude
+        self.latitude = latitude
+
     def __repr__(self):
         return "<Restaurant(name='%s', latitude='%s, longitude='%s')>" % (self.name, self.latitude, self.longitude)
 
+db.create_all()
+
+'''
 if __name__ == "__main__":
 
     #Create the database
@@ -29,8 +51,7 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
 
     #Create the session
-    session = sessionmaker()
-    session.configure(bind=engine)
+    session = sessionmaker(bind=engine)
     s = session()
 
     try:
@@ -48,9 +69,9 @@ if __name__ == "__main__":
                 'latitude' : i[5]
             })
             s.add(record) #Add all the records
-        s.commit() #Attempt to commit all the records
+            s.commit() #Attempt to commit all the records
     except:
         s.rollback() #Rollback the changes on error
     finally:
         s.close() #Close the connection
-
+'''
