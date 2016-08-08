@@ -30,7 +30,7 @@
          }); 
         }
         document.getElementById('latitude').value = location.lat();
-        document.getElementByID('longitude').value = location.lng(); 
+        document.getElementById('longitude').value = location.lng(); 
       } 
       </script> 
   
@@ -57,7 +57,13 @@
      <option value="poor">Poor</option> 
      <option value="fair">Fair</option> 
      <option value="good">Good</option> 
-    </select> 
+    </select>
+    <label for="latitude">Latitude</label>
+    <input name="latitude" id="latitude"
+     type="text">
+    <label for="longitude">Longitude</label>
+    <input name="longitude" id="longitude"
+     type="text">
     <label for="comments">Comments</label> 
     <textarea name="commens" id="comments" 
        placeholder="Customer feedback on the restaurant"></textarea> 
