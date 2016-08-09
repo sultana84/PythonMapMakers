@@ -1,0 +1,75 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  <head> 
+    <script type="text/javascript" 
+      src="https://maps.googleapis.com/maps/api/js"> 
+    </script> 
+ 
+    <script type="text/javascript"> 
+      
+      var map; 
+      var marker; 
+      function initialize() { 
+        var mapOptions = { 
+          center: new google.maps.LatLng(40.712552, -74.009339),  
+          zoom: 18 
+          }; 
+          map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions); 
+          google.maps.event.addListener(map, 'click', function(event){ 
+            placeMarker(event.latLng); 
+          }); 
+      } 
+  
+      function placeMarker(location) { 
+        if (marker) { 
+          marker.setPosition(location); 
+        } else { 
+         marker = new google.maps.Marker({ 
+           position: location, 
+           map: map 
+         }); 
+        }
+        document.getElementById('latitude').value = location.lat();
+        document.getElementById('longitude').value = location.lng(); 
+      } 
+      </script> 
+  
+   </head>
+     <link type="text/css" rel="stylesheet" href="{{url_for('static',
+       filename='css/style.css')}}" /> 
+     <body onload="initialize()"> 
+      <h1>Lower Manhattan</h1> 
+      <p>Restaurant Survey in the Lower Manhattan Area.</p> 
+     <div id="map-canvas" style="width:80%;
+       height:500px;"></div>
+</html> 
+  <div id="restaurantform"> 
+   <h2>Share your experience</h2> 
+   <form action="/submitsurvey" method="POST"> 
+    <label for="price">Price</label> 
+    <select name="price" id="price"> 
+     <option value="$">$</option> 
+     <option value="$$">$$</option> 
+     <option value="$$$">$$$</option> 
+    </select> 
+    <label for="rating">Rating</label> 
+    <select name="rating" id="rating"> 
+     <option value="poor">Poor</option> 
+     <option value="fair">Fair</option> 
+     <option value="good">Good</option> 
+    </select>
+    <label for="latitude">Latitude</label>
+    <input name="latitude" id="latitude"
+     type="text">
+    <label for="longitude">Longitude</label>
+    <input name="longitude" id="longitude"
+     type="text">
+    <label for="comments">Comments</label> 
+    <textarea name="comments" id="comments" 
+       placeholder="Customer feedback on the restaurant"></textarea> 
+    <input type="submit" value="Submit"> 
+    </form> 
+    </div> 
+</body> 
+
+
