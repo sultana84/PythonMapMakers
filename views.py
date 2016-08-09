@@ -28,16 +28,29 @@ def home():
     return render_template("home.html")
 
 
+@app.route('/home')
+@login_required
+def surveyhome():
+    return render_template("surveyhome.html")
+
+@app.route('/submitsurvey', methods=['POST'])
+def submitsurvey():
+   price = request.form.get("price")
+   rating = request.form.get("rating")
+   latitude = float(request.form.get("latitude"))
+   longitude = float(request.form.get("longitude"))
+   comments = request.form.get("comments")
+   DB.restaurantmap(price, rating, latitude, longitude, comments)
+   return home()
+
+
 @app.route("/account", methods=[ "GET", "POST"])
 #@login_required
 def account():
-    print(request.form)
     return render_template("account.html")
 
 @app.route("/login", methods=[ "GET", "POST"])
 def login():
-    print(request.form)
-    print('something')
     email = request.form.get("email")
     password = request.form.get("password")
     stored_user = DB.get_user(email)
@@ -79,4 +92,5 @@ def load_user(user_id):
 app.secret_key = '0ZyLk/0K1+GVdZTRWCfK441+CUHGmRKXzly1UXnws29VOYHuVTCyhFfMh4c9OcWUgL8iGgk5a99t9T1Xo5EsC9wmoTAiDPZu8US'
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(port=5000, debug=True, host='0.0.0.0')
+
