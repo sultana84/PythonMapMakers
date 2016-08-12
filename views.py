@@ -6,16 +6,16 @@ from flask import redirect
 from flask import url_for
 from flask import request
 from dbhelp import dbhelp as DBHelper
-from user import User
+from model import User
 from passwordhelp import PasswordHelp
-from pymongo import MongoClient
 import os
+from model import app, db
+from sqlalchemy import Column, Integer, Float, Date, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-DB = DBHelper()
-PH = PasswordHelp()
 
-
-app = Flask(__name__)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -34,6 +34,7 @@ def surveyhome():
     return render_template("surveyhome.html")
 
 @app.route('/submitsurvey', methods=['POST'])
+@login_required
 def submitsurvey():
    price = request.form.get("price")
    rating = request.form.get("rating")
@@ -41,25 +42,31 @@ def submitsurvey():
    longitude = float(request.form.get("longitude"))
    comments = request.form.get("comments")
    DB.restaurantmap(price, rating, latitude, longitude, comments)
-   return home()
-
+   return render_template("surveyhome.html")
 
 @app.route("/account", methods=[ "GET", "POST"])
-#@login_required
+@login_required
 def account():
     return render_template("account.html")
 
 @app.route("/login", methods=[ "GET", "POST"])
 def login():
-    email = request.form.get("email")
+    if request.method == 'GET':
+        return render_template('login.html')
+    email = request.form.get("username")
     password = request.form.get("password")
-    stored_user = DB.get_user(email)
-    user_password = DB.get_user(email)
-    if user_password and user_password == password:
-        user = User(email)
-        login_user(user, remember=True)
-        return redirect(url_for('account'))
-    return render_template('login-form.html')
+    registered_user = User.query.filter(User.email==email).first()
+    if registered_user is None:
+        flash('Username or Password is invalid', 'error')
+        return redirect(url_for('register'))
+    if registered_user.password and registered_user.check_password(password):
+        print('LOGGED IN')
+        login_user(registered_user, remember=True)
+        return redirect(url_for('surveyhome'))
+    else:
+        print('NOT LOGGING IN')
+        flash('A user was not found with that username and password combination')
+        return render_template('surveyhome.html')
 
 @app.route("/logout")
 def logout():
@@ -69,6 +76,35 @@ def logout():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    email = request.form.get('email')
+    pw1 = request.form.get('password1')
+    pw2 = request.form.get('password2')
+    if not pw1 == pw2:
+        flash("Password do not match")
+        return redirect(url_for("register"))
+    else:
+        password = pw1
+
+    if User.query.filter(User.email == email).count():
+        flash("This email already register!")
+        return redirect(url_for("login.html"))
+    user = User(password, email)
+    db.session.add(user)
+    db.session.commit()
+    flash('User successfully registered')
+    login_user(user)
+    return redirect(url_for('login'))
+
+
+'''
+
+    registered_user = Use(str(request.form.get))
+#    db.session.add(user)
+#    db.session.commit()
+#    flash('User successfully registered')
+#    return redirect(url_for('login'))
     email = str(request.form.get["email"])
     pw1 = str(request.form.get["password"])
     pw2 = str(request.form.get["password2"])
@@ -80,12 +116,13 @@ def register():
     hashed = PH.get_hash(pw1 + salt)
     DB.add_user(email, salt, hashed)
     return redirect(url_for("home"))
+'''
+
+
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_password = DB.get_user(user_id)
-    if user_password:
-        return User(user_id)
+    return User.query.filter(User.id==user_id)
 
 
 
